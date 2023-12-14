@@ -32,7 +32,7 @@ export const useUserStore = defineStore('userStore', {
             0,0,0,0,0,0,0,0,0,0,0,0,
             0,0,0,0,0,0,0,0,0,0,0,0
           ])
-        }
+        } 
       })
     },
     joinTeam(data) {
