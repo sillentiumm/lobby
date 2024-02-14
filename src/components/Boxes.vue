@@ -1,0 +1,273 @@
+<template>
+  <div class="bg-wood"></div>
+
+  <div class="boxes-game">
+    <div class="boxes-join1 flex justify-center bg-slate-600 text-white">
+      <div class="text-xl mb-2 md">Игрок 1:</div>
+      <button 
+        v-if="!player1Computed"
+        @click="joinTeam(1)"
+        class="underline rounded-xl px-4 py-2"
+      >
+        Вступить
+      </button>
+      <div v-else> {{ player1Computed }}</div>
+      <button 
+        v-if="teamComputed== 1"
+        @click="leaveTeam(1)"
+        class="underline rounded-xl px-4 py-2"
+      >
+        выйти
+      </button>
+    </div>
+
+    <div class="boxes-main relative">
+      <div 
+        class="boxes-table bg-gray-500"
+        :class="{ green: teamWinComputed == 1, red: teamWinComputed == 2}"
+      >
+        <div 
+          class="boxes-table__cell w-4 h-4 bg-slate-600" 
+          :class="{ box1_bg: item == 1, box2_bg: item == 2, green: teamWinComputed == 1, red: teamWinComputed == 2}"
+          v-for="item, idx in field"
+          @click="turn(item, idx)"
+        ></div>
+      </div>
+      <div class="boxes-turn text-white text-center text-xl">
+        <button 
+          @click="startGame()"
+          v-if="player1Computed && player2Computed && !turnComputed" 
+          class="items-center text-white text-xl border rounded px-6 py-1 mt-2"
+        >
+          start
+        </button>
+        <div v-if="turnComputed==1 && !winnerComputed">
+          Ход: {{ player1Computed }}
+        </div>
+        <div v-if="turnComputed==2 && !winnerComputed">
+          Ход: {{ player2Computed }}
+        </div>
+        <!-- <div class="underline cursor-pointer" @click="startGame()">reset</div> -->
+      </div>
+      <div v-if="player1Computed && player2Computed && winnerComputed" class=" flex justify-center items-center absolute inset-0 text-4xl rounded-xl z-50">
+        <button 
+          @click="startGame()"
+          class="text-3xl border-2 border-gray-500 text-gray-400 rounded-lg px-8 py-2"
+        >
+          Новая игра
+        </button>
+        </div>
+    </div>
+
+    <div class="boxes-join2 flex justify-center bg-slate-600 text-white">
+      <div class="text-xl mb-2">Игрок 2:</div>
+      <button 
+      v-if="!player2Computed"
+        @click="joinTeam(2)"
+        class="underline rounded-xl px-4 py-2"
+      >
+        Вступить
+      </button>
+      <div v-else>{{ player2Computed }}</div>
+      <button 
+        v-if="teamComputed == 2"
+        @click="leaveTeam(2)"
+        class="underline rounded-xl px-4 py-2"
+      >
+        выйти
+      </button>
+    </div>
+  </div>
+</template>
+
+<script>
+
+
+import { useBoxesStore } from '../stores/storeBoxes';
+
+  export default {
+    data() {
+      return {}
+    },
+    setup() {
+      const store = useBoxesStore();
+      return{
+        store,
+      }
+  },
+    methods: {
+      setNickname() {
+      let promptValue = prompt('Введите ваше имя')
+      if (promptValue) {localStorage.setItem('nickname', promptValue);}
+      else localStorage.setItem('nickname', 'unnamed');
+    },
+    joinTeam(team){
+      this.store.joinTeam({room: this.room, team: team})
+    },
+    leaveTeam(team) {
+      this.store.leaveTeam({room: this.room, team: team})
+    },
+    startGame() {
+      this.store.startBoxes({room: this.room})
+    },
+    async watchRoom() {
+      await this.store.watchRoom({room: this.room})
+    },
+
+    turn(item, idx) { 
+      if(item) return false
+      if(idx > 89 || this.store.boxesField[idx + 10] ) {
+        if(this.player1Computed == localStorage.nickname && this.turnComputed== 1) {
+          this.store.boxesTurn({room: this.room, idx: idx})
+        }
+        else if(this.player2Computed == localStorage.nickname && this.turnComputed== 2) {
+          this.store.boxesTurn({room: this.room, idx: idx})
+        }
+      } else { return false }
+    },
+    resetGame() {
+      if(this.player1Computed == localStorage.nickname) {
+        this.store.resetGame({room: this.room, player: 1 })
+      } else if(this.player2Computed == localStorage.nickname) {
+        this.store.resetGame({room: this.room, player: 2 })
+      }
+    },
+  },
+
+    computed: {
+      player1Computed() {
+        return this.store.player1
+      },
+      player2Computed() {
+        return this.store.player2
+      },
+      teamComputed() {
+        return this.store.team
+      },
+      field() {
+        return this.store.boxesField
+      },
+      turnComputed() {
+        return this.store.turn
+      },
+      winnerComputed() {
+        return this.store.winner
+      },
+      teamWinComputed() {    
+        if(this.store.winner == localStorage.nickname) {
+          return 1
+        } else if(this.store.winner) {
+          return 2
+        } else return 0
+      }
+  },
+  beforeMount() {
+    if(!localStorage.nickname)  this.setNickname()
+    this.room = this.$route.query.room
+    this.watchRoom(this.$route.query.room)
+  },
+  created() {
+    window.onbeforeunload = () => {
+      this.resetGame()
+    }
+  }
+  }
+</script>
+
+<style>
+  .boxes-game {
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .boxes-main {
+      order: 2;
+    }
+  .boxes-table {
+    width: 100vw;
+    max-width: 612px;
+    height: 612px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  .boxes-table__cell {
+    width: 59px;
+    height: 59px;
+    border-radius: 4px;
+    margin: 1px;
+  }
+  .boxes-join1 {
+    width: 256px;
+    height: 256px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 12px;
+    margin-right: 64px;
+    padding: 16px;
+  }
+  .boxes-join2 {
+    width: 256px;
+    height: 256px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 12px;
+    margin-left: 64px;
+    padding: 16px;
+    order: 3;
+  }
+  .box1_bg {
+    background: brown url(../assets/img/box1.jpg);
+    background-size: 100%;
+  }
+  .box2_bg {
+    background: brown url(../assets/img/box2.jpg);
+    background-size: 100%;
+  }
+
+  @media (max-width: 1124px) {
+    .boxes-game {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .boxes-main {
+      order: 3;
+      align-self: center;
+    }
+    .boxes-join1 {
+      order: 1;
+      margin: 8px 48px 24px 0;
+      height: 136px
+    }
+    .boxes-join2 {
+      order: 2;
+      margin: 8px 0 24px 48px;
+      height: 136px
+    }
+  }
+
+  @media (max-width: 624px) {
+    .boxes-table {
+      width: 376px;
+      height: 376px;
+    }
+    .boxes-table__cell {
+      width: 35px;
+      height: 35px;
+    }
+    .boxes-join1 {
+      width: calc(50% - 8px);
+      margin: 4px;
+    }
+    .boxes-join2 {
+      width: calc(50% - 8px);
+      margin: 4px;
+    }
+  }
+</style>

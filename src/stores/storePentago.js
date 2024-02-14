@@ -2,7 +2,7 @@ import { computed } from 'vue'
 import { defineStore } from 'pinia'
 import { getDatabase, ref, set, get, child, push, update, onValue } from 'firebase/database'
 
-export const useUserStore = defineStore('userStore', {
+export const usePentagoStore = defineStore('userStore', {
   state: () => ({
     player1: '',
     player2: '',
@@ -18,12 +18,12 @@ export const useUserStore = defineStore('userStore', {
     winner: ''
   }),
   actions: {
-    createRoom(gameName, room) {
+    createPentago(gameName, room) {
       const db = getDatabase();
       const dbRef = ref(getDatabase());
-      const referenceRoom = ref(db, gameName +'/' + room + '/field')
+      const referenceRoom = ref(db, 'pentago/' + room + '/field')
   
-      get(child(dbRef, `${gameName}/${room}/field`)).then((snapshot) => {
+      get(child(dbRef, `pentago/${room}/field`)).then((snapshot) => {
         if(snapshot.exists()) {
         }
         else {
@@ -37,7 +37,7 @@ export const useUserStore = defineStore('userStore', {
     },
     joinTeam(data) {
       const db = getDatabase();
-      const distanceRef = ref(db, `${data.game}/${data.room}`)
+      const distanceRef = ref(db, `pentago/${data.room}`)
       if(!this.team) {
         if(data.team == 1) {
           update(distanceRef, {
@@ -54,8 +54,8 @@ export const useUserStore = defineStore('userStore', {
 
     leaveTeam(data) {
       const db = getDatabase();
-      const distanceRef = ref(db, `${data.game}/${data.room}`)
-      const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
+      const distanceRef = ref(db, `pentago/${data.room}`)
+      const distanceTurn = ref(db, `pentago/${data.room}/turn`)
       if(data.team == 1) {
         update(distanceRef, {
           player1: null
@@ -72,11 +72,11 @@ export const useUserStore = defineStore('userStore', {
 
     async watchRoom(data) {
       const db = getDatabase();
-      const distancePlayer1 = ref(db, `${data.game}/${data.room}/player1`)
-      const distancePlayer2 = ref(db, `${data.game}/${data.room}/player2`)
-      const distanceField = ref(db, `${data.game}/${data.room}/field`)
-      const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
-      const distanceWinner = ref(db, `${data.game}/${data.room}/winner`)
+      const distancePlayer1 = ref(db, `pentago/${data.room}/player1`)
+      const distancePlayer2 = ref(db, `pentago/${data.room}/player2`)
+      const distanceField = ref(db, `pentago/${data.room}/field`)
+      const distanceTurn = ref(db, `pentago/${data.room}/turn`)
+      const distanceWinner = ref(db, `pentago/${data.room}/winner`)
 
       onValue(distancePlayer1, (snapshot) => {
         this.player1 = snapshot.val()
@@ -103,7 +103,7 @@ export const useUserStore = defineStore('userStore', {
 
     startPentago(data) {
       const db = getDatabase();
-      const distanceField = ref(db, `${data.game}/${data.room}`)
+      const distanceField = ref(db, `pentago/${data.room}`)
       update(distanceField, {
         field: [
           0,0,0,0,0,0,0,0,0,0,0,0,
@@ -115,10 +115,36 @@ export const useUserStore = defineStore('userStore', {
       })
     },
 
+    resetGame(data) {
+      console.log('reset')
+      const db = getDatabase();
+      const distanceField = ref(db, `pentago/${data.room}`)
+
+      update(distanceField, {
+        field: [
+          0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0
+        ],
+        turn: 0,
+        winner:''
+      })
+
+      if(data.player == 1) {
+        update(distanceField, {
+          player1: ''
+        })
+      } else if(data.player == 2) {
+        update(distanceField, {
+          player2: ''
+        })
+      }
+    },
+
     pentagoTurn1(data){
       const db = getDatabase();
-      const distanceField = ref(db, `${data.game}/${data.room}/field/${data.idx}`)
-      const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
+      const distanceField = ref(db, `pentago/${data.room}/field/${data.idx}`)
+      const distanceTurn = ref(db, `pentago/${data.room}/turn`)
 
       if(this.turn == 1) {
         set(distanceField, 1)
@@ -134,8 +160,8 @@ export const useUserStore = defineStore('userStore', {
 
     pentagoTurn2(data){
       const db = getDatabase();
-      const distanceField = ref(db, `${data.game}/${data.room}/field`)
-      const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
+      const distanceField = ref(db, `pentago/${data.room}/field`)
+      const distanceTurn = ref(db, `pentago/${data.room}/turn`)
 
       function rotate(arr, rotateCount) {
         const clone = arr.slice(0);
@@ -148,7 +174,7 @@ export const useUserStore = defineStore('userStore', {
 
       function addToField(oldArr, oldIdx, newIdx) {
         for(let i =0; i<8; i++) {
-          const distanceFieldIdx = ref(db, `${data.game}/${data.room}/field/${oldIdx[i]}`)
+          const distanceFieldIdx = ref(db, `pentago/${data.room}/field/${oldIdx[i]}`)
           set(distanceFieldIdx, oldArr[newIdx[i]])
         }
       }
