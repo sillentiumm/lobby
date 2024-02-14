@@ -25,6 +25,7 @@ export const useBoxesStore = defineStore('userStore', {
   }),
   actions: {
     createBoxes(gameName, room) {
+      console.log('создано')
       const db = getDatabase();
       const dbRef = ref(getDatabase());
       const referenceRoom = ref(db, 'boxes/' + room + '/field')

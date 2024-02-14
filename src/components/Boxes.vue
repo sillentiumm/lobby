@@ -60,7 +60,7 @@
         <div v-if="turnComputed==2 && !winnerComputed">
           Ход: {{ player2Computed }}
         </div>
-        <!-- <div class="underline cursor-pointer" @click="startGame()">reset</div> -->
+        <div class="underline cursor-pointer" @click="startGame()">reset</div>
       </div>
     </div>
 
@@ -89,14 +89,16 @@
 <script>
 
 
-import { useBoxesStore } from '../stores/storeBoxes';
+// import { useBoxesStore } from '../stores/storeBoxes';
+import { useStore } from '../stores/store';
 
   export default {
     data() {
       return {}
     },
     setup() {
-      const store = useBoxesStore();
+      // const store = useBoxesStore();
+      const store = useStore();
       return{
         store,
       }
@@ -108,16 +110,16 @@ import { useBoxesStore } from '../stores/storeBoxes';
       else localStorage.setItem('nickname', 'unnamed');
     },
     joinTeam(team){
-      this.store.joinTeam({room: this.room, team: team})
+      this.store.joinTeam({game: 'boxes', room: this.room, team: team})
     },
     leaveTeam(team) {
-      this.store.leaveTeam({room: this.room, team: team})
+      this.store.leaveTeam({game: 'boxes', room: this.room, team: team})
     },
     startGame() {
       this.store.startBoxes({room: this.room})
     },
     async watchRoom() {
-      await this.store.watchRoom({room: this.room})
+      await this.store.watchRoom({game: 'boxes', room: this.room})
     },
 
     turn(item, idx) { 
@@ -133,9 +135,9 @@ import { useBoxesStore } from '../stores/storeBoxes';
     },
     resetGame() {
       if(this.player1Computed == localStorage.nickname) {
-        this.store.resetGame({room: this.room, player: 1 })
+        this.store.resetGameBoxes({room: this.room, player: 1 })
       } else if(this.player2Computed == localStorage.nickname) {
-        this.store.resetGame({room: this.room, player: 2 })
+        this.store.resetGameBoxes({room: this.room, player: 2 })
       }
     },
   },

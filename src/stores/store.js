@@ -2,23 +2,47 @@ import { computed } from 'vue'
 import { defineStore } from 'pinia'
 import { getDatabase, ref, set, get, child, push, update, onValue } from 'firebase/database'
 
-export const useUserStore = defineStore('userStore', {
+export const useStore = defineStore('userStore', {
   state: () => ({
     player1: '',
     player2: '',
     playersList: [],
-    abcTest: [1,2,3,4],
     team: 0,
+    turn: 0,
+    winner: '',
     pentagoField: [
       0,0,0,0,0,0,0,0,0,0,0,0,
       0,0,0,0,0,0,0,1,1,0,0,0,
       0,0,0,0,0,0,0,2,0,0,0,0
     ],
-    turn: 0,
-    winner: ''
+    boxesField: [
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0
+    ],
+    ticTacToeField: [
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0]
+    ],
+    ticTacToeFieldBig: [0,0,0,0,0,0,0,0,0],
+    ticTacToeFieldNext: -1,
   }),
   actions: {
-    createRoom(gameName, room) {
+    createPentago(gameName, room) {
       const db = getDatabase();
       const dbRef = ref(getDatabase());
       const referenceRoom = ref(db, gameName +'/' + room + '/field')
@@ -75,9 +99,12 @@ export const useUserStore = defineStore('userStore', {
       const distancePlayer1 = ref(db, `${data.game}/${data.room}/player1`)
       const distancePlayer2 = ref(db, `${data.game}/${data.room}/player2`)
       const distanceField = ref(db, `${data.game}/${data.room}/field`)
+      const distanceFieldBoxes = ref(db, `boxes/${data.room}/field`)
+      const distanceTicTacToeField = ref(db, `tictactoe/${data.room}/field`)
+      const distanceTicTacToeFieldBig = ref(db, `tictactoe/${data.room}/fieldBig`)
+      const distanceTicTacToeFieldNext = ref(db, `tictactoe/${data.room}/fieldNext`)
       const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
       const distanceWinner = ref(db, `${data.game}/${data.room}/winner`)
-
       onValue(distancePlayer1, (snapshot) => {
         this.player1 = snapshot.val()
         if(this.player1 == localStorage.nickname) {
@@ -93,6 +120,18 @@ export const useUserStore = defineStore('userStore', {
       onValue(distanceField, (snapshot) => {
         this.pentagoField = snapshot.val()
       })
+      onValue(distanceFieldBoxes, (snapshot) => {
+        this.boxesField = snapshot.val()
+      })
+      onValue(distanceTicTacToeField, (snapshot) => {
+        this.ticTacToeField = snapshot.val()
+      })
+      onValue(distanceTicTacToeFieldBig, (snapshot) => {
+        this.ticTacToeFieldBig = snapshot.val()
+      })
+      onValue(distanceTicTacToeFieldNext, (snapshot) => {
+        this.ticTacToeFieldNext = snapshot.val()
+      })
       onValue(distanceTurn, (snapshot) => {
         this.turn = snapshot.val()
       })
@@ -101,6 +140,7 @@ export const useUserStore = defineStore('userStore', {
       })
     },
 
+    //PENTAGO
     startPentago(data) {
       const db = getDatabase();
       const distanceField = ref(db, `${data.game}/${data.room}`)
@@ -115,10 +155,35 @@ export const useUserStore = defineStore('userStore', {
       })
     },
 
+    resetPentago(data) {
+      const db = getDatabase();
+      const distanceField = ref(db, `pentago/${data.room}`)
+
+      update(distanceField, {
+        field: [
+          0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,0,0
+        ],
+        turn: 0,
+        winner:''
+      })
+
+      if(data.player == 1) {
+        update(distanceField, {
+          player1: ''
+        })
+      } else if(data.player == 2) {
+        update(distanceField, {
+          player2: ''
+        })
+      }
+    },
+
     pentagoTurn1(data){
       const db = getDatabase();
-      const distanceField = ref(db, `${data.game}/${data.room}/field/${data.idx}`)
-      const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
+      const distanceField = ref(db, `pentago/${data.room}/field/${data.idx}`)
+      const distanceTurn = ref(db, `pentago/${data.room}/turn`)
 
       if(this.turn == 1) {
         set(distanceField, 1)
@@ -134,8 +199,8 @@ export const useUserStore = defineStore('userStore', {
 
     pentagoTurn2(data){
       const db = getDatabase();
-      const distanceField = ref(db, `${data.game}/${data.room}/field`)
-      const distanceTurn = ref(db, `${data.game}/${data.room}/turn`)
+      const distanceField = ref(db, `pentago/${data.room}/field`)
+      const distanceTurn = ref(db, `pentago/${data.room}/turn`)
 
       function rotate(arr, rotateCount) {
         const clone = arr.slice(0);
@@ -148,7 +213,7 @@ export const useUserStore = defineStore('userStore', {
 
       function addToField(oldArr, oldIdx, newIdx) {
         for(let i =0; i<8; i++) {
-          const distanceFieldIdx = ref(db, `${data.game}/${data.room}/field/${oldIdx[i]}`)
+          const distanceFieldIdx = ref(db, `pentago/${data.room}/field/${oldIdx[i]}`)
           set(distanceFieldIdx, oldArr[newIdx[i]])
         }
       }
@@ -216,6 +281,353 @@ export const useUserStore = defineStore('userStore', {
       else if(this.pentagoField[5]==team && this.pentagoField[10]==team && this.pentagoField[15]==team && this.pentagoField[20]==team && this.pentagoField[25]==team) {set(distanceWinner, localStorage.nickname)}
       else if(this.pentagoField[10]==team && this.pentagoField[15]==team && this.pentagoField[20]==team && this.pentagoField[25]==team && this.pentagoField[30]==team) {set(distanceWinner, localStorage.nickname)}
       else if(this.pentagoField[11]==team && this.pentagoField[16]==team && this.pentagoField[21]==team && this.pentagoField[26]==team && this.pentagoField[31]==team) {set(distanceWinner, localStorage.nickname)}
+    },
+
+    //BOXES
+    createBoxes(gameName, room) {
+      const db = getDatabase();
+      const dbRef = ref(getDatabase());
+      const referenceRoom = ref(db, 'boxes/' + room + '/field')
+  
+      get(child(dbRef, `boxes/${room}/field`)).then((snapshot) => {
+        if(snapshot.exists()) {
+        }
+        else {
+          set(referenceRoom, [
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0
+          ])
+        } 
+      })
+    },
+
+    resetBoxes(data) {
+      const db = getDatabase();
+      const distanceField = ref(db, `boxes/${data.room}`)
+
+      update(distanceField, {
+        field: [
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0
+        ],
+        turn: 0,
+        winner:''
+      })
+
+      if(data.player == 1) {
+        update(distanceField, {
+          player1: ''
+        })
+      } else if(data.player == 2) {
+        update(distanceField, {
+          player2: ''
+        })
+      }
+    },
+
+    startBoxes(data) {
+      const db = getDatabase();
+      const distanceField = ref(db, `boxes/${data.room}`)
+      update(distanceField, {
+        field: [
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0
+        ],
+        turn: 1,
+        winner:''
+      })
+    },
+
+    boxesTurn(data){
+      const db = getDatabase();
+      const distanceField = ref(db, `boxes/${data.room}/field/${data.idx}`)
+      const distanceTurn = ref(db, `boxes/${data.room}/turn`)
+
+      if(this.turn == 1) {
+        set(distanceField, 1)
+        set(distanceTurn, 2)
+        this.boxesWinnerTest(data.room, data.idx, 1)
+      }
+      else if(this.turn == 2) {
+        set(distanceField, 2)
+        set(distanceTurn, 1)
+        this.boxesWinnerTest(data.room, data.idx, 2)
+      }
+    },
+
+    resetGameBoxes(data) {
+      const db = getDatabase();
+      const distanceField = ref(db, `boxes/${data.room}`)
+
+      update(distanceField, {
+        field: [
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,0,0
+        ],
+        turn: 0,
+        winner:''
+      })
+
+      if(data.player == 1) {
+        update(distanceField, {
+          player1: ''
+        })
+      } else if(data.player == 2) {
+        update(distanceField, {
+          player2: ''
+        })
+      }
+    },
+
+    boxesWinnerTest(room, idx, team) {
+      const db = getDatabase();
+      const distanceWinner = ref(db, `boxes/${room}/winner`)
+      // vertical
+      if(this.boxesField[idx + 10] == team && this.boxesField[idx + 20] == team && this.boxesField[idx + 30] == team ) {
+        set(distanceWinner, localStorage.nickname)
+      }
+      
+      // horizontal
+      let count = 0
+      for(let i =0; i<10; i++) {
+        if(this.boxesField[Math.floor(idx/10)*10+i] == team) {
+          count++
+          if(count == 4) {
+            set(distanceWinner, localStorage.nickname)
+          }
+        } else {
+          count = 0
+        }
+      }
+
+      // diagonal1
+      count = 0 
+      if(((Math.floor(idx/10)*10) + 10 == Math.floor((idx + 11)/10)*10) && this.boxesField[idx+11] == team ) {
+        count++
+        if(((Math.floor(idx/10)*10) + 20 == Math.floor((idx + 22)/10)*10) && this.boxesField[idx+22] == team ) {
+          count++
+          if(((Math.floor(idx/10)*10) + 30 == Math.floor((idx + 33)/10)*10) && this.boxesField[idx+33] == team ) {
+            count++
+            set(distanceWinner, localStorage.nickname)
+          }
+        }
+      }
+      if(((Math.floor(idx/10)*10) - 10 == Math.floor((idx - 11 )/10)*10) && this.boxesField[idx-11] == team ) {
+        count++
+        if(count==3) { set(distanceWinner, localStorage.nickname) }
+        if(((Math.floor(idx/10)*10) - 20 == Math.floor((idx - 22 )/10)*10) && this.boxesField[idx-22] == team ) {
+          count++
+          if(count==3) { set(distanceWinner, localStorage.nickname) }
+          if(((Math.floor(idx/10)*10) - 30 == Math.floor((idx - 33 )/10)*10) && this.boxesField[idx-33] == team ) {
+            count++
+            set(distanceWinner, localStorage.nickname)
+          }
+        }
+      }
+
+      // diagonal2
+      count = 0 
+      if(((Math.floor(idx/10)*10) + 10 == Math.floor((idx + 9)/10)*10) && this.boxesField[idx+9] == team ) {
+        count++
+        if(((Math.floor(idx/10)*10) + 20 == Math.floor((idx + 18)/10)*10) && this.boxesField[idx+18] == team ) {
+          count++
+          if(((Math.floor(idx/10)*10) + 30 == Math.floor((idx + 27)/10)*10) && this.boxesField[idx+27] == team ) {
+            count++
+            set(distanceWinner, localStorage.nickname)
+          }
+        }
+      }
+      if(((Math.floor(idx/10)*10) - 10 == Math.floor((idx - 9 )/10)*10) && this.boxesField[idx-9] == team ) {
+        count++
+        if(count==3) { set(distanceWinner, localStorage.nickname) }
+        if(((Math.floor(idx/10)*10) - 20 == Math.floor((idx - 18 )/10)*10) && this.boxesField[idx-18] == team ) {
+          count++
+          if(count==3) { set(distanceWinner, localStorage.nickname) }
+          if(((Math.floor(idx/10)*10) - 30 == Math.floor((idx - 27 )/10)*10) && this.boxesField[idx-27] == team ) {
+            count++
+            set(distanceWinner, localStorage.nickname)
+          }
+        }
+      }
+    },
+
+
+    //TicTacToe
+    createTicTacToe(gameName, room) {
+      const db = getDatabase();
+      const dbRef = ref(getDatabase());
+      const referenceRoom = ref(db, 'tictactoe/' + room + '/field')
+  
+      get(child(dbRef, `tictactoe/${room}/field`)).then((snapshot) => {
+        if(snapshot.exists()) {
+        }
+        else {
+          set(referenceRoom, [
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0]
+          ])
+        } 
+      })
+    },
+
+    startTicTacToe(data) {
+      const db = getDatabase();
+      const distanceField = ref(db, `tictactoe/${data.room}`)
+      update(distanceField, {
+        field: [
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0]
+        ],
+        fieldBig: [0,0,0,0,0,0,0,0,0],
+        fieldNext: -1,
+        turn: 1,
+        winner:''
+      })
+    },
+
+    resetGameTicTacToe(data) {
+      const db = getDatabase();
+      const distanceField = ref(db, `tictactoe/${data.room}`)
+
+      update(distanceField, {
+        field: [
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0]
+        ],
+        fieldBig: [0,0,0,0,0,0,0,0,0],
+        fieldNext: -1,
+        turn: 0,
+        winner:''
+      })
+
+      if(data.player == 1) {
+        update(distanceField, {
+          player1: ''
+        })
+      } else if(data.player == 2) {
+        update(distanceField, {
+          player2: ''
+        })
+      }
+    },
+
+    ticTacToeTurn(data){
+      const db = getDatabase();
+      const distanceField = ref(db, `tictactoe/${data.room}/field/${data.idxField}/${data.idx}`)
+      const distanceTurn = ref(db, `tictactoe/${data.room}/turn`)
+      const distanceFieldNext = ref(db, `tictactoe/${data.room}/fieldNext`)
+
+      if(this.turn == 1) {
+        set(distanceField, 1)
+        set(distanceTurn, 2)
+        this.miniWinnerTest(data.room, data.idxField, data.idx, 1)
+      }
+      else if(this.turn == 2) {
+        set(distanceField, 2)
+        set(distanceTurn, 1)
+        this.miniWinnerTest(data.room, data.idxField, data.idx, 2)
+      }
+
+      if(this.ticTacToeFieldBig[data.idx]) {
+        set(distanceFieldNext, -1)
+      } else {
+        set(distanceFieldNext, data.idx)
+      }
+
+    },
+
+    miniWinnerTest(room, idxField, idx, team) {
+      const db = getDatabase();
+      const distanceField = ref(db, `tictactoe/${room}/field/${idxField}`)
+      const distanceFieldBig = ref(db, `tictactoe/${room}/fieldBig/${idxField}`)
+      const distanceWinner = ref(db, `tictactoe/${room}/winner`)
+
+      const arrTeam = [team, team, team, team, team, team, team, team, team]
+
+      const globalWinnerTest = () => {
+        if(this.ticTacToeFieldBig[0]==team && this.ticTacToeFieldBig[1]==team && this.ticTacToeFieldBig[2]==team) { }
+        else if(this.ticTacToeFieldBig[3]==team && this.ticTacToeFieldBig[4]==team && this.ticTacToeFieldBig[5]==team) { }
+        else if(this.ticTacToeFieldBig[6]==team && this.ticTacToeFieldBig[7]==team && this.ticTacToeFieldBig[8]==team) { }
+        else if(this.ticTacToeFieldBig[0]==team && this.ticTacToeFieldBig[3]==team && this.ticTacToeFieldBig[6]==team) { }
+        else if(this.ticTacToeFieldBig[1]==team && this.ticTacToeFieldBig[4]==team && this.ticTacToeFieldBig[7]==team) { }
+        else if(this.ticTacToeFieldBig[2]==team && this.ticTacToeFieldBig[5]==team && this.ticTacToeFieldBig[8]==team) { }
+        else if(this.ticTacToeFieldBig[0]==team && this.ticTacToeFieldBig[4]==team && this.ticTacToeFieldBig[8]==team) { }
+        else if(this.ticTacToeFieldBig[2]==team && this.ticTacToeFieldBig[4]==team && this.ticTacToeFieldBig[6]==team) { }  
+        else return false
+        set(distanceWinner, localStorage.nickname)
+      }
+
+      const addToFirebase = (array, team) => {
+        set(distanceField, array)
+        set(distanceFieldBig, team)
+        globalWinnerTest()
+      };
+
+      if(this.ticTacToeField[idxField][0]==team && this.ticTacToeField[idxField][1]==team && this.ticTacToeField[idxField][2]==team) { }
+      else if(this.ticTacToeField[idxField][3]==team && this.ticTacToeField[idxField][4]==team && this.ticTacToeField[idxField][5]==team) { }
+      else if(this.ticTacToeField[idxField][6]==team && this.ticTacToeField[idxField][7]==team && this.ticTacToeField[idxField][8]==team) { }
+      else if(this.ticTacToeField[idxField][0]==team && this.ticTacToeField[idxField][3]==team && this.ticTacToeField[idxField][6]==team) { }
+      else if(this.ticTacToeField[idxField][1]==team && this.ticTacToeField[idxField][4]==team && this.ticTacToeField[idxField][7]==team) { }
+      else if(this.ticTacToeField[idxField][2]==team && this.ticTacToeField[idxField][5]==team && this.ticTacToeField[idxField][8]==team) { }
+      else if(this.ticTacToeField[idxField][0]==team && this.ticTacToeField[idxField][4]==team && this.ticTacToeField[idxField][8]==team) { }
+      else if(this.ticTacToeField[idxField][2]==team && this.ticTacToeField[idxField][4]==team && this.ticTacToeField[idxField][6]==team) { }  
+      else if(this.ticTacToeField[idxField][0]&&this.ticTacToeField[idxField][1]&&this.ticTacToeField[idxField][2]&&this.ticTacToeField[idxField][3]&&this.ticTacToeField[idxField][4]&&this.ticTacToeField[idxField][5]&&this.ticTacToeField[idxField][6]&&this.ticTacToeField[idxField][7]&&this.ticTacToeField[idxField][8]) { }
+      else return false
+
+      addToFirebase(arrTeam, team)
     }
   }
 })

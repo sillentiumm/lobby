@@ -26,7 +26,7 @@
       >
         <div 
           class="tictactoe-fieldBig bg-gray-500 " 
-          :class="{ markFiledbig: this.filedNext == idxField, markPlayer2: fieldMini == 2}"
+          :class="{ markFieldbig: this.fieldNext == idxField, markPlayer2: fieldMini == 2}"
           v-for="fieldMini, idxField in field"
         >
           <div 
@@ -98,14 +98,16 @@
 
 
 import { off } from 'firebase/database';
-import { useTicTacToeStore } from '../stores/storeTicTacToe';
+// import { useTicTacToeStore } from '../stores/storeTicTacToe';
+import { useStore } from '../stores/store';
+
 
 export default {
   data() {
     return {}
   },
   setup() {
-    const store = useTicTacToeStore();
+    const store = useStore();
     return{
       store,
     }
@@ -117,10 +119,10 @@ export default {
       else localStorage.setItem('nickname', 'unnamed');
     },
     joinTeam(team){
-      this.store.joinTeam({room: this.room, team: team})
+      this.store.joinTeam({game:'tictactoe', room: this.room, team: team})
     },
     leaveTeam(team) {
-      this.store.leaveTeam({room: this.room, team: team})
+      this.store.leaveTeam({game:'tictactoe',room: this.room, team: team})
     },
     startGame() {
       if(this.player1Computed && this.player2Computed) {
@@ -129,18 +131,17 @@ export default {
     },
     resetGame() {
       if(this.player1Computed == localStorage.nickname) {
-        this.store.resetGame({room: this.room, player: 1 })
+        this.store.resetGameTicTacToe({room: this.room, player: 1 })
       } else if(this.player2Computed == localStorage.nickname) {
-        this.store.resetGame({room: this.room, player: 2 })
+        this.store.resetGameTicTacToe({room: this.room, player: 2 })
       }
     },
     async watchRoom() {
-      await this.store.watchRoom({room: this.room})
+      await this.store.watchRoom({game: 'tictactoe', room: this.room})
     },
     turn(idxField, idx, item) {
       if(item) return false
-      if(this.filedNext >-1 && idxField !== this.filedNext) return false
-       
+      if(this.fieldNext >-1 && idxField !== this.fieldNext) return false
       if(this.player1Computed == localStorage.nickname && this.turnComputed== 1) {
         this.store.ticTacToeTurn({room: this.room, idxField: idxField, idx: idx})
       }
@@ -160,13 +161,13 @@ export default {
       return this.store.team
     },
     field() {
-      return this.store.field
+      return this.store.ticTacToeField
     },
-    filedBig() {
-      return this.store.fieldBig
+    fieldBig() {
+      return this.store.ticTacToeFieldBig
     },
-    filedNext() {
-      return this.store.fieldNext
+    fieldNext() {
+      return this.store.ticTacToeFieldNext
     },
     turnComputed() {
       return this.store.turn
@@ -238,8 +239,6 @@ export default {
     left: 0;
     font-size: 42px;
     color: #fff;
-    /* background-color: rgba(0, 255, 255, .15); */
-    /* background-color: rgba(255, 0, 0, .15); */
     padding: 8px;
   }
   .tictactoeWinnerWin {
@@ -271,7 +270,7 @@ export default {
   .markO::before {
     content: "🟢";
   }
-  .markFiledbig {
+  .markFieldbig {
     background-color: lightcyan;
   }
   @media (max-width: 1124px) {

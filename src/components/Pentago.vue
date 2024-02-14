@@ -20,7 +20,7 @@
       </button>
     </div>
 
-    <div class="pentago-table bg-slate-600">
+    <div class="pentago-table relative bg-slate-600">
       <div class="pentago pentago-table-bordered bg-slate-600">
         <div 
           class="pentago-table__cell bg-red-200" 
@@ -111,6 +111,7 @@
       <div v-if="turnComputed==4" class="absolute bottom-2 items-center text-white text-xl">
         Ход: {{ player2Computed }}(2)
       </div>
+      <div class="pentago_reset" @click="startGame()">reset</div>
     </div>
 
     <div class="pentago-join2 flex justify-center bg-slate-600 text-white">
@@ -136,11 +137,12 @@
 </template>
 
 <script>
-import { usePentagoStore } from '../stores/storePentago';
+// import { usePentagoStore } from '../stores/storePentago';
+import { useStore } from '../stores/store';
 
 export default {
   setup() {
-    const store = usePentagoStore();
+    const store = useStore();
     return{
       store,
     }
@@ -175,9 +177,9 @@ export default {
     },
     resetGame() {
       if(this.player1Computed == localStorage.nickname) {
-        this.store.resetGame({room: this.room, player: 1 })
+        this.store.resetGamePentago({room: this.room, player: 1 })
       } else if(this.player2Computed == localStorage.nickname) {
-        this.store.resetGame({room: this.room, player: 2 })
+        this.store.resetGamePentago({room: this.room, player: 2 })
       }
     },
     turn1(item, idx) {
@@ -320,6 +322,17 @@ export default {
     justify-content: center;
     align-items: center;
   }
+  .pentago_reset {
+    position: absolute;
+    bottom: -30px;
+    left:50%;
+    transform:translate(-50%, 0);
+    z-index: 90;
+    text-decoration: underline;
+    cursor: pointer;
+    color: #fff;
+    font-size: 24px;
+  }
   .pentago-winner {
     display: flex;
     flex-direction: column;
@@ -352,6 +365,7 @@ export default {
     .pentago-table {
       order: 3;
       align-self: center;
+      margin-bottom: 30px;
     }
     .pentago-join1 {
       order: 1;

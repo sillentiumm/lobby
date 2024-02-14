@@ -20,7 +20,7 @@
           <div class="flex items-center">
             <input 
               type="text" placeholder="комната" 
-              v-model="join_room_form.value"
+              v-model="formPentago"
               class="h-8 bg-gray-100 border border-gray-900 text-gray-900 text-lg rounded-lg block px-2.5 mr-1"
             >
             <img @click="joinPentago()" src="../assets/img/enter-icon.svg" alt="" class="w-5 h-5 cursor-pointer">
@@ -50,7 +50,7 @@
           <div class="flex items-center">
             <input 
               type="text" placeholder="комната" 
-              v-model="join_room_form.value"
+              v-model="formBoxes"
               class="h-8 bg-gray-100 border border-gray-900 text-gray-900 text-lg rounded-lg block px-2.5 mr-1"
             >
             <img @click="joinBoxes()" src="../assets/img/enter-icon.svg" alt="" class="w-5 h-5 cursor-pointer">
@@ -78,7 +78,7 @@
           <div class="flex items-center">
             <input 
               type="text" placeholder="комната" 
-              v-model="join_room_form.value"
+              v-model="formTicTacToe"
               class="h-8 bg-gray-100 border border-gray-900 text-gray-900 text-lg rounded-lg block px-2.5 mr-1"
             >
             <img @click="joinTicTacToe()" src="../assets/img/enter-icon.svg" alt="" class="w-5 h-5 cursor-pointer">
@@ -100,62 +100,47 @@
 </template>
 
 <script>
-import { ref } from 'vue'
 import router from '../router/index'
-import { usePentagoStore } from '../stores/storePentago';
-import { useBoxesStore } from '../stores/storeBoxes';
-import { useTicTacToeStore } from '../stores/storeTicTacToe';
+import { useStore } from '../stores/store';
+
+// import { usePentagoStore } from '../stores/storePentago';
+// import { useBoxesStore } from '../stores/storeBoxes';
+// import { useTicTacToeStore } from '../stores/storeTicTacToe';
 
   export default {
-    setup() {
-      const join_room_form = ({ref})
 
-      const joinPentago = () => {
-        const store = usePentagoStore();
-        if(join_room_form.value) {
-          store.createPentago('pentago', join_room_form.value)
-          router.push({ name: 'pentago', query: {game: 'pentago', room:join_room_form.value }})
-        }
-      }
-
-      const joinBoxes = () => {
-        const store = useBoxesStore();
-        if(join_room_form.value) {
-          store.createBoxes('boxes', join_room_form.value)
-          router.push({ name: 'boxes', query: {game: 'boxes', room:join_room_form.value }})
-        }
-      }
-
-      const joinTicTacToe = () => {
-        const store = useTicTacToeStore();
-        if(join_room_form.value) {
-          store.createTicTacToe('tictactoe', join_room_form.value)
-          router.push({ name: 'tictactoe', query: {game: 'ticTacToe', room:join_room_form.value }})
-        }
-      }
-
-      const setNickname = () => {
-        let promptValue = prompt('Введите ваше имя')
-        if (promptValue) {localStorage.setItem('nickname', promptValue);}
-        else localStorage.setItem('nickname', 'unnamed');
-      }
-
-      return {
-        joinPentago,
-        joinBoxes,
-        joinTicTacToe,
-        join_room_form,
-        setNickname
-      }
-    },
     data() {
       return {
         rulesPentago: false,
         rulesBoxes: false,
         rulesTicTacToe: false,
+        formPentago: '',
+        formBoxes: '',
+        formTicTacToe: ''
       }
     },
     methods: {
+      joinPentago() {
+        const store = useStore()
+        if(this.formPentago) {
+          store.createPentago('pentago', this.formPentago)
+          router.push({ name: 'pentago', query: {game: 'pentago', room: this.formPentago }})
+        }
+      },
+      joinBoxes() {
+        const store = useStore()
+        if(this.formBoxes) {
+          store.createBoxes('boxes', this.formBoxes)
+          router.push({ name: 'boxes', query: {game: 'boxes', room: this.formBoxes }})
+        }
+      },
+      joinTicTacToe() {
+        const store = useStore()
+        if(this.formTicTacToe) {
+          store.createTicTacToe('tictactoe', this.formTicTacToe)
+          router.push({ name: 'tictactoe', query: {game: 'tictactoe', room: this.formTicTacToe }})
+        }
+      },
       changeRulesPentago() {
         this.rulesPentago =!this.rulesPentago
       },
