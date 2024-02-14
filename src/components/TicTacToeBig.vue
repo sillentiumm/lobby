@@ -60,14 +60,14 @@
         class="tictactoe-winner"
         :class="{ tictactoeWinnerWin: this.teamWinComputed == 1, tictactoeWinnerLose: teamWinComputed == 2}"
       >
-      <div class="text-center mb-8">Победитель: {{ winnerComputed }}</div>
-      <button 
-        @click="startGame()"
-        class="tictactoe-winner_btn"
-      >
-        Новая игра
-      </button>
-    </div>
+        <div class="text-center mb-8">Победитель: {{ winnerComputed }}</div>
+        <button 
+          @click="startGame()"
+          class="tictactoe-winner_btn"
+        >
+          Новая игра
+        </button>
+      </div>
       
     </div>
 

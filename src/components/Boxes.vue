@@ -24,14 +24,27 @@
     <div class="boxes-main relative">
       <div 
         class="boxes-table bg-gray-500"
-        :class="{ green: teamWinComputed == 1, red: teamWinComputed == 2}"
       >
         <div 
           class="boxes-table__cell w-4 h-4 bg-slate-600" 
-          :class="{ box1_bg: item == 1, box2_bg: item == 2, green: teamWinComputed == 1, red: teamWinComputed == 2}"
+          :class="{ box1_bg: item == 1, box2_bg: item == 2}"
           v-for="item, idx in field"
           @click="turn(item, idx)"
         ></div>
+
+        <div 
+          v-if="player1Computed && player2Computed && winnerComputed" 
+          class="boxes-winner"
+          :class="{ boxesWinnerWin: this.teamWinComputed == 1, boxesWinnerLose: teamWinComputed == 2}"
+        >
+          <div class="text-center mb-8">Победитель: {{ winnerComputed }}</div>
+          <button 
+            @click="startGame()"
+            class="tictactoe-winner_btn"
+          >
+            Новая игра
+          </button>
+        </div>
       </div>
       <div class="boxes-turn text-white text-center text-xl">
         <button 
@@ -49,14 +62,6 @@
         </div>
         <!-- <div class="underline cursor-pointer" @click="startGame()">reset</div> -->
       </div>
-      <div v-if="player1Computed && player2Computed && winnerComputed" class=" flex justify-center items-center absolute inset-0 text-4xl rounded-xl z-50">
-        <button 
-          @click="startGame()"
-          class="text-3xl border-2 border-gray-500 text-gray-400 rounded-lg px-8 py-2"
-        >
-          Новая игра
-        </button>
-        </div>
     </div>
 
     <div class="boxes-join2 flex justify-center bg-slate-600 text-white">
@@ -77,6 +82,7 @@
         выйти
       </button>
     </div>
+    
   </div>
 </template>
 
@@ -222,6 +228,26 @@ import { useBoxesStore } from '../stores/storeBoxes';
     padding: 16px;
     order: 3;
   }
+  .boxes-winner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 612px;
+    height: 612px;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 42px;
+    color: #fff;
+    padding: 8px;
+  }
+  .boxesWinnerWin {
+    background-color: rgba(0, 255, 255, .15);
+  }
+  .boxesWinnerLose {
+    background-color: rgba(255, 0, 0, .15);
+  }
   .box1_bg {
     background: brown url(../assets/img/box1.jpg);
     background-size: 100%;
@@ -268,6 +294,17 @@ import { useBoxesStore } from '../stores/storeBoxes';
     .boxes-join2 {
       width: calc(50% - 8px);
       margin: 4px;
+    }
+    .boxes-winner {
+      width: 376px;
+      height: 376px;
+      font-size: 28px;
+    }
+    .boxes-winner_btn {
+      font-size: 22px;
+      border: 1px solid;
+      border-radius: 8px;
+      padding: 6px 22px;
     }
   }
 </style>

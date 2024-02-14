@@ -30,6 +30,20 @@
         ></div>
       </div>
 
+      <div 
+          v-if="player1Computed && player2Computed && winnerComputed" 
+          class="pentago-winner"
+          :class="{ pentagoWinnerWin: this.teamWinComputed == 1, pentagoWinnerLose: teamWinComputed == 2}"
+        >
+          <div class="text-center mb-8">Победитель: {{ winnerComputed }}</div>
+          <button 
+            @click="startGame()"
+            class="tictactoe-winner_btn"
+          >
+            Новая игра
+          </button>
+        </div>
+
       <div class="pentago-arrows absolute top-0 left-0 rounded-xl z-20">
         <div @click="turn2(1,2)" class="w-[36px] h-[36px] bg-blue-200 absolute top-[6px] left-[6px] rounded p-1">
           <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 454.833 454.833" style="enable-background:new 0 0 454.833 454.833;" xml:space="preserve"><g><path d="M220.917,112.86h111.666l-76.91-76.905c-8.252-8.254-8.252-21.698,0-29.953c7.991-8.003,21.958-8.003,29.955,0 l113.067,113.07c4.001,3.999,6.206,9.321,6.206,14.978c0,5.66-2.205,10.982-6.206,14.981L285.634,262.095 c-7.997,8.003-21.946,8.015-29.961,0c-8.252-8.257-8.252-21.698,0-29.956l76.91-76.911H220.917 c-70.917,0-128.618,57.701-128.618,128.618c0,70.923,57.701,128.618,128.618,128.618h60.526c10.03,0,18.158,8.133,18.158,18.158 v6.053c0,10.03-8.128,18.157-18.158,18.157h-60.526c-94.279,0-170.986-76.704-170.986-170.986 C49.931,189.567,126.638,112.86,220.917,112.86z"/></g></svg>
@@ -118,15 +132,6 @@
       </button>
     </div>
 
-    <div v-if="player1Computed && player2Computed && winnerComputed" class="w-[512px] h-[256px] flex flex-col justify-center items-center bg-blue-200 absolute text-4xl rounded-xl z-50">
-      <div class="mb-8">Победитель: {{ winnerComputed }}</div>
-      <button 
-        @click="startGame()"
-        class="text-xl border border-black rounded px-6 py-1"
-      >
-        Новая игра
-      </button>
-    </div>
   </div>
 </template>
 
@@ -211,6 +216,13 @@ export default {
     },
     winnerComputed() {
       return this.store.winner
+    },
+    teamWinComputed() {    
+      if(this.store.winner == localStorage.nickname) {
+        return 1
+      } else if(this.store.winner) {
+        return 2
+      } else return 0
     }
   },
 
@@ -308,6 +320,27 @@ export default {
     justify-content: center;
     align-items: center;
   }
+  .pentago-winner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 612px;
+    height: 612px;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 42px;
+    color: #fff;
+    padding: 8px;
+    z-index: 60;
+  }
+  .pentagoWinnerWin {
+    background-color: rgba(0, 255, 255, .15);
+  }
+  .pentagoWinnerLose {
+    background-color: rgba(255, 0, 0, .15);
+  }
 
   @media (max-width: 1024px) {
     .pentago-game {
@@ -367,6 +400,17 @@ export default {
       background-color: gray;
       width: 2px;
       height: 100%;
+    }
+    .pentago-winner {
+      width: 376px;
+      height: 376px;
+      font-size: 28px;
+    }
+    .pentago-winner_btn {
+      font-size: 22px;
+      border: 1px solid;
+      border-radius: 8px;
+      padding: 6px 22px;
     }
   }
 </style>
