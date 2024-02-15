@@ -232,6 +232,7 @@ export default {
     if(!localStorage.nickname) this.setNickname()
     this.room = this.$route.query.room
     this.watchRoom(this.$route.query.room)
+    this.store.team = 0
   },
 
   created() {

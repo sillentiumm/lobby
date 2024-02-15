@@ -173,6 +173,7 @@ import { useStore } from '../stores/store';
     if(!localStorage.nickname)  this.setNickname()
     this.room = this.$route.query.room
     this.watchRoom(this.$route.query.room)
+    this.store.team = 0
   },
   created() {
     window.onbeforeunload = () => {
@@ -253,6 +254,8 @@ import { useStore } from '../stores/store';
   .box1_bg {
     background: brown url(../assets/img/box1.jpg);
     background-size: 100%;
+    position: relative;
+    /* animation: animateBox .4s ease-out forwards 0s */
   }
   .box2_bg {
     background: brown url(../assets/img/box2.jpg);
@@ -309,4 +312,5 @@ import { useStore } from '../stores/store';
       padding: 6px 22px;
     }
   }
+
 </style>

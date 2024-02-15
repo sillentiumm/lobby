@@ -42,23 +42,7 @@ export const useStore = defineStore('userStore', {
     ticTacToeFieldNext: -1,
   }),
   actions: {
-    createPentago(gameName, room) {
-      const db = getDatabase();
-      const dbRef = ref(getDatabase());
-      const referenceRoom = ref(db, gameName +'/' + room + '/field')
   
-      get(child(dbRef, `${gameName}/${room}/field`)).then((snapshot) => {
-        if(snapshot.exists()) {
-        }
-        else {
-          set(referenceRoom, [
-            0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,0,0,0
-          ])
-        } 
-      })
-    },
     joinTeam(data) {
       const db = getDatabase();
       const distanceRef = ref(db, `${data.game}/${data.room}`)
@@ -141,6 +125,24 @@ export const useStore = defineStore('userStore', {
     },
 
     //PENTAGO
+    createPentago(gameName, room) {
+      const db = getDatabase();
+      const dbRef = ref(getDatabase());
+      const referenceRoom = ref(db, gameName +'/' + room + '/field')
+  
+      get(child(dbRef, `${gameName}/${room}/field`)).then((snapshot) => {
+        if(snapshot.exists()) {
+        }
+        else {
+          set(referenceRoom, [
+            0,0,0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,0,0
+          ])
+        } 
+      })
+    },
+
     startPentago(data) {
       const db = getDatabase();
       const distanceField = ref(db, `${data.game}/${data.room}`)
@@ -155,7 +157,7 @@ export const useStore = defineStore('userStore', {
       })
     },
 
-    resetPentago(data) {
+    resetGamePentago(data) {
       const db = getDatabase();
       const distanceField = ref(db, `pentago/${data.room}`)
 
@@ -173,10 +175,12 @@ export const useStore = defineStore('userStore', {
         update(distanceField, {
           player1: ''
         })
+        this.player1 = ''
       } else if(data.player == 2) {
         update(distanceField, {
           player2: ''
         })
+        this.player2 = ''
       }
     },
 
@@ -309,38 +313,6 @@ export const useStore = defineStore('userStore', {
       })
     },
 
-    resetBoxes(data) {
-      const db = getDatabase();
-      const distanceField = ref(db, `boxes/${data.room}`)
-
-      update(distanceField, {
-        field: [
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0,
-          0,0,0,0,0,0,0,0,0,0
-        ],
-        turn: 0,
-        winner:''
-      })
-
-      if(data.player == 1) {
-        update(distanceField, {
-          player1: ''
-        })
-      } else if(data.player == 2) {
-        update(distanceField, {
-          player2: ''
-        })
-      }
-    },
-
     startBoxes(data) {
       const db = getDatabase();
       const distanceField = ref(db, `boxes/${data.room}`)
@@ -404,10 +376,12 @@ export const useStore = defineStore('userStore', {
         update(distanceField, {
           player1: ''
         })
+        this.player1 = ''
       } else if(data.player == 2) {
         update(distanceField, {
           player2: ''
         })
+        this.player2 = ''
       }
     },
 
@@ -557,10 +531,12 @@ export const useStore = defineStore('userStore', {
         update(distanceField, {
           player1: ''
         })
+        this.player1 = ''
       } else if(data.player == 2) {
         update(distanceField, {
           player2: ''
         })
+        this.player2 = ''
       }
     },
 
